@@ -3,8 +3,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const { mongoose, Schema } = require("mongoose");
-const md5 = require('md5');
-// const bcrypt = require('bcrypt');
+// const md5 = require('md5');
+const bcrypt = require('bcrypt');
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -19,6 +19,7 @@ const userSchema = new Schema({
 })
 
 const User = new mongoose.model("User", userSchema);
+const saltRounds = parseInt(process.env.SALTROUNDS);
 
 //get methods
 app.listen(3000, () => {
@@ -43,13 +44,11 @@ app.get('/submit', (req,res) => {
 //post methods
 app.post('/register', (req, res) => {
     let user = req.body;
-    // console.log(user);
     newUser(user);
     res.render("secrets")
 });
 app.post('/login', async (req, res) => {
     let user = req.body;
-    // console.log(user);
     let confirm = await verifyUser(user);
     if (confirm) {
         res.render("secrets");
@@ -60,25 +59,26 @@ app.post('/login', async (req, res) => {
 
 //functions
 function newUser(user) {
-    const newUser = new User({
-        username: user.username,
-        password: md5(user.password)
-    })
-    User.create(newUser);
+    bcrypt.hash(user.password, saltRounds,function(err, hash) {
+        const newUser = new User({
+            username: user.username,
+            password: hash
+        })
+        User.create(newUser);
+    });
 }
 async function verifyUser(logger) {
     let accessor = await find(logger.username);
-    // console.log(accessor);
-
+    let result = bcrypt.compare(logger.password, accessor[0].password);
     if (accessor == null) {
         console.log('User not found');
-        return false
-    } else if(md5(logger.password) == accessor[0].password){
-        return true;
+    } else if(result){
     } else {
         console.log("incorrect password");
-        return false;
     }
+    return result;
+
+
 }
 async function find(username) {
     return await User.find({ username: username });
