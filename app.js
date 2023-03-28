@@ -20,7 +20,7 @@ const userSchema = new Schema({
 
 const User = new mongoose.model("User", userSchema);
 
-//get pages
+//get methods
 app.listen(3000, () => {
     console.log("We're up");
 });
