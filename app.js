@@ -3,13 +3,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const { mongoose, Schema } = require("mongoose");
-<<<<<<< HEAD
-// const md5 = require('md5');
 const bcrypt = require('bcrypt');
-=======
-const md5 = require('md5');
-// const bcrypt = require('bcrypt');
->>>>>>> df7d565f81401d02cd01d1f090df099f93d349c7
+
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -64,7 +59,6 @@ app.post('/login', async (req, res) => {
 
 //functions
 function newUser(user) {
-<<<<<<< HEAD
     bcrypt.hash(user.password, saltRounds,function(err, hash) {
         const newUser = new User({
             username: user.username,
@@ -72,27 +66,13 @@ function newUser(user) {
         })
         User.create(newUser);
     });
-=======
-    const newUser = new User({
-        username: user.username,
-        password: md5(user.password)
-    })
-    User.create(newUser);
->>>>>>> df7d565f81401d02cd01d1f090df099f93d349c7
 }
 async function verifyUser(logger) {
     let accessor = await find(logger.username);
     let result = bcrypt.compare(logger.password, accessor[0].password);
     if (accessor == null) {
         console.log('User not found');
-<<<<<<< HEAD
-    } else if(result){
-=======
-        return false
-    } else if(md5(logger.password) == accessor[0].password){
-        return true;
->>>>>>> df7d565f81401d02cd01d1f090df099f93d349c7
-    } else {
+    } else if(!result){
         console.log("incorrect password");
     }
     return result;
