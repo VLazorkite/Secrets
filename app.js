@@ -4,23 +4,20 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const { mongoose, Schema } = require("mongoose");
-const encrypt = require('mongoose-encryption');
+const md5 = require('md5');
 const app = express();
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-const uri = 'mongodb+srv://Lazorkite:theseventh@cluster0.jsv4qjw.mongodb.net/secretsDb';
-mongoose.connect(uri);
+mongoose.connect(process.env.URI);
 
 const userSchema = new Schema({
     username: String,
     password: String
 })
 
-const secret = process.env.SECRET;
-userSchema.plugin( encrypt, { secret: secret, encryptedFields: ['password'] });
 const User = new mongoose.model("User", userSchema);
 
 //get pages
@@ -65,7 +62,7 @@ app.post('/login', async (req, res) => {
 function newUser(user) {
     const newUser = new User({
         username: user.username,
-        password: user.password
+        password: md5(user.password)
     })
     User.create(newUser);
 }
@@ -76,7 +73,7 @@ async function verifyUser(logger) {
     if (accessor == null) {
         console.log('User not found');
         return false
-    } else if(logger.password == accessor[0].password){
+    } else if(md5(logger.password) == accessor[0].password){
         return true;
     } else {
         console.log("incorrect password");
